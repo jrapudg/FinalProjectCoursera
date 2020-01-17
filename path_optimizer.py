@@ -76,7 +76,7 @@ class PathOptimizer:
         # ------------------------------------------------------------------
         # bounds = ...
         # ------------------------------------------------------------------
-        bounds = [[-0.5,0.5],[-0.5,0.5],[p0,None]]
+        bounds = ((-0.5, 0.5),(-0.5, 0.5),(sf_0, None))
         # Here we will call scipy.optimize.minimize to optimize our spiral.
         # The objective and gradient are given to you by self.objective, and
         # self.objective_grad. The bounds are computed above, and the inital
@@ -86,7 +86,7 @@ class PathOptimizer:
         # ------------------------------------------------------------------
         # res = scipy.optimize.minimize(...)
         # ------------------------------------------------------------------
-        res = scipy.optimize.minimize(objective, p0, method='L-BFGS-B', jac = objective_grad, constraints = bounds, options = {'disp' : True})
+        res = scipy.optimize.minimize(self.objective, p0, method='L-BFGS-B', bounds = bounds,  jac = self.objective_grad)
         spiral = self.sample_spiral(res.x)
         return spiral
 
@@ -121,6 +121,7 @@ class PathOptimizer:
         b = np.array(b)
         c = np.array(c)
         d = np.array(d)
+        s = np.array(s)
         thetas = a*s + (b/2)*(s**2) + (c/3)*(s**3) + (d/4)*(s**4)
         return thetas
     ######################################################
@@ -179,7 +180,26 @@ class PathOptimizer:
         # y_points = ...
         # return [x_points, y_points, t_points]
         # ------------------------------------------------------------------
+        t_points = self.thetaf(a, b, c, d, s_points)
+        try:
+            len_of_list = len(a)
+        except:
+            len_of_list = 1
 
+        x_points = (s_points/24)*(np.cos(self.thetaf(a,b,c,d,np.zeros(len_of_list))) \
+                    + 4*np.cos(self.thetaf(a,b,c,d,s_points/8)) + 2*np.cos(self.thetaf(a,b,c,d,2*s_points/8))\
+                    + 4*np.cos(self.thetaf(a,b,c,d,3*s_points/8)) + 2*np.cos(self.thetaf(a,b,c,d,4*s_points/8))\
+                    + 4*np.cos(self.thetaf(a,b,c,d,5*s_points/8)) + 2*np.cos(self.thetaf(a,b,c,d,6*s_points/8))\
+                    + 4*np.cos(self.thetaf(a,b,c,d,7*s_points/8)) + np.cos(self.thetaf(a,b,c,d,s_points))\
+                    )
+        y_points = (s_points/24)*(np.sin(self.thetaf(a,b,c,d,np.zeros(len_of_list))) \
+                    + 4*np.sin(self.thetaf(a,b,c,d,s_points/8)) + 2*np.sin(self.thetaf(a,b,c,d,2*s_points/8))\
+                    + 4*np.sin(self.thetaf(a,b,c,d,3*s_points/8)) + 2*np.sin(self.thetaf(a,b,c,d,4*s_points/8))\
+                    + 4*np.sin(self.thetaf(a,b,c,d,5*s_points/8)) + 2*np.sin(self.thetaf(a,b,c,d,6*s_points/8))\
+                    + 4*np.sin(self.thetaf(a,b,c,d,7*s_points/8)) + np.sin(self.thetaf(a,b,c,d,s_points))\
+                    )
+                    
+        return [x_points.tolist(), y_points.tolist(), t_points.tolist()]
     ######################################################
     ######################################################
     # BELOW ARE THE FUNCTIONS USED FOR THE OPTIMIZER.
